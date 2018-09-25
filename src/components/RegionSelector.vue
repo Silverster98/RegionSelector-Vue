@@ -6,24 +6,24 @@
       您选择的是： <input type="text" id="address">
       <br/>
 
-      <select id="province" v-on:change="loadCity">
-        <option>=请选择省份=</option>
-        <option v-for="item in provinceList" :key="item.value">
-          {{ item.value }}
+      <select id="province" v-model="current.province" v-on:change="loadCity">
+        <option value=''>=请选择省份=</option>
+        <option v-for="item in provinceList" :value="item.id" :key="item.id">
+          {{ item.name }}
         </option>
       </select>
 
-      <select id="city" v-on:change="loadCounty">
-        <option>=请选择城市=</option>
-        <option v-for="item in cityList" :key="item.value">
-          {{ item.value }}
+      <select id="city" v-model="current.city" v-on:change="loadCounty">
+        <option value=''>=请选择城市=</option>
+        <option v-for="item in cityList" :value="item.id" :key="item.id">
+          {{ item.name }}
         </option>
       </select>
 
-      <select id="county" v-on:change="selectedCounty">
-        <option>=请选择县区=</option>
-        <option v-for="item in countyList" :key="item.value">
-          {{ item.value }}
+      <select id="county" v-model="current.county" v-on:change="selectedCounty">
+        <option value=''>=请选择县区=</option>
+        <option v-for="item in countyList" :value="item.id" :key="item.id">
+          {{ item.name }}
         </option>
       </select>
 
@@ -40,7 +40,8 @@ export default {
     return {
       provinceList: [],
       cityList: [],
-      countyList: []
+      countyList: [],
+      current: {province: '', city: '', county: ''} // 记录当前选择
     }
   },
   mounted () {
@@ -51,59 +52,53 @@ export default {
     initElement: function () {
       this.button = document.getElementById('button')
       this.address = document.getElementById('address')
-      this.current = {province: '', city: '', county: ''} // 记录当前选择
     },
     // 加载省份列表
     loadProvince () {
       this.button.disabled = true // 按钮不可点
       const len = region.length
       for (let i = 0; i < len; i++) { // 根据 region 信息添加 option
-        const item = {value: region[i].name}
+        const item = {name: region[i].name, id: i}
         this.provinceList.push(item)
       }
     },
     // 加载城市，在选中一个省份后开始加载
-    loadCity (item) {
+    loadCity () {
       this.button.disabled = true // 按钮不可点
-      const provinceIndex = item.target.selectedIndex - 1 // =请选择省份= 选项在 0 处，故减1
-      this.current.province = provinceIndex // 记录选择的 province
-
       this.cityList = []
       this.countyList = [] // 清空 city 和 county 的 select 中的 option
+      this.current.city = ''
+      this.current.county = '' // 让城市和县区选择框复位
 
-      if (provinceIndex === -1) return // 选择为：=请选择省份=，直接返回
+      if (this.current.province === -1) return // 选择为：=请选择省份=，直接返回
 
-      const cityLen = region[provinceIndex].city.length
+      const cityLen = region[this.current.province].city.length
       for (let j = 0; j < cityLen; j++) { // 添加相应 option
-        const item = {value: region[provinceIndex]['city'][j].name}
+        const item = {name: region[this.current.province]['city'][j].name, id: j}
         this.cityList.push(item)
       }
     },
     // 加载县区列表，在选择一个城市后开始加载
-    loadCounty (item) {
+    loadCounty () {
       this.button.disabled = true
-      const cityIndex = item.target.selectedIndex - 1
-      this.current.city = cityIndex // 记录选择的 city
-
       this.countyList = [] // 清空county的select
+      this.current.county = '' // 让县区选择框复位
 
-      if (cityIndex === -1) return // 选择为：=请选择城市=，直接返回
+      if (this.current.city === -1) return // 选择为：=请选择城市=，直接返回
 
-      const countyLen = region[this.current.province]['city'][cityIndex].districtAndCounty.length
+      const countyLen = region[this.current.province]['city'][this.current.city].districtAndCounty.length
       if (countyLen === 0) { // 城市下再无县区，可直接点确定
         this.button.disabled = false
         this.current.county = ''
       }
       for (let k = 0; k < countyLen; k++) { // 添加相应 option
-        const item = {value: region[this.current.province]['city'][cityIndex]['districtAndCounty'][k]}
+        const item = {name: region[this.current.province]['city'][this.current.city]['districtAndCounty'][k], id: k}
         this.countyList.push(item)
       }
     },
     // 选择县区后相关处理
-    selectedCounty (item) {
-      const countyIndex = item.target.selectedIndex - 1
-      this.current.county = countyIndex
-      if (countyIndex === -1) { // 选择为：=请选择城市=
+    selectedCounty () {
+      if (this.current.county === -1) { // 选择为：=请选择城市=
         this.button.disabled = true
         return
       }
