@@ -3,7 +3,7 @@
     <fieldset>
       <legend>下拉选择框实现省市区三级联动</legend>
 
-      您选择的是： <input type="text" id="address">
+      您选择的是： <label><input type="text" id="address"></label>
       <br/>
 
       <select id="province" v-model="current.province" v-on:change="loadCity">
