@@ -8,21 +8,21 @@
 
       <select id="province" v-model="province">
         <option value=''>=请选择省份=</option>
-        <option v-for="item in getProvinceList()" :value="item.id" :key="item.id">
+        <option v-for="item in getProvinceList" :value="item.id" :key="item.id">
           {{ item.name }}
         </option>
       </select>
 
       <select id="city" v-model="city">
         <option value=''>=请选择城市=</option>
-        <option v-for="item in getCityList()" :value="item.id" :key="item.id">
+        <option v-for="item in getCityList" :value="item.id" :key="item.id">
           {{ item.name }}
         </option>
       </select>
 
       <select id="county" v-model="county">
         <option value=''>=请选择县区=</option>
-        <option v-for="item in getCountyList()" :value="item.id" :key="item.id">
+        <option v-for="item in getCountyList" :value="item.id" :key="item.id">
           {{ item.name }}
         </option>
       </select>
@@ -46,9 +46,9 @@ export default {
   mounted () {
     this.address = document.getElementById('address')
   },
-  methods: {
+  computed: {
     // 直接加载省份列表
-    getProvinceList () {
+    getProvinceList: function () {
       const len = region.length
       let provList = []
       for (let i = 0; i < len; i++) { // 根据 region 信息添加 option
@@ -58,7 +58,8 @@ export default {
       return provList
     },
     // 加载城市列表，在选择一个省份后开始加载
-    getCityList () {
+    getCityList: function () {
+      this.resetCity()
       let cityList = []
       if (this.province === '') return cityList // 选择为：=请选择省份=
 
@@ -70,7 +71,8 @@ export default {
       return cityList
     },
     // 加载县区列表，在选择一个城市后开始加载
-    getCountyList () {
+    getCountyList: function () {
+      this.resetCounty()
       let countyList = []
       if (this.city === '') return countyList // 选择为：=请选择城市=
 
@@ -80,6 +82,14 @@ export default {
         countyList.push(item)
       }
       return countyList
+    }
+  },
+  methods: {
+    resetCity () {
+      this.city = ''
+    },
+    resetCounty () {
+      this.county = ''
     },
     // 判断是否 button 可点击
     getOk () {
@@ -94,15 +104,6 @@ export default {
       } else {
         this.address.value = region[this.province].name + '-' + region[this.province]['city'][this.city].name + '-' + region[this.province]['city'][this.city]['districtAndCounty'][this.county]
       }
-    }
-  },
-  // 不得已使用，因为当改变省份或城市时，需要清空对当前选择，在 getCityList() 和 getCountyList() 中无法清空
-  watch: {
-    province: function () {
-      this.city = ''
-    },
-    city: function () {
-      this.county = ''
     }
   }
 }
